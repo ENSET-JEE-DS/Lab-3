@@ -13,6 +13,13 @@
             List of Patients
         </div>
         <div class="card-body">
+            <form method="get" th:action="index">
+                <label> Patient</label>
+                <label>
+                    <input type="text" name="keyword" th:value="${keyword}">
+                </label>
+                <input type="submit" value="Search" class="btn btn-primary">
+            </form>
             <table class="table">
                 <thead>
                 <tr>
@@ -20,7 +27,8 @@
                     <th>Name</th>
                     <th>Birth-Date</th>
                     <th>Score</th>
-                    <th>Sick</th>
+                    <th>Status</th>
+                    <th>Delete</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -30,10 +38,26 @@
                     <td th:text="${p.birthDate}"></td>
                     <td th:text="${p.score}"></td>
                     <td th:text="${p.ill ? 'Sick': 'Healthy'}"></td>
+                    <td>
+                        <a href="" class="btn btn-outline-danger"
+                           th:href="${!#strings.isEmpty(keyword)} ? @{delete(id=${p.id}, keyword=${keyword}, p=${currentPage})} :@{delete(id=${p.id}, p=${currentPage})}">
+                            Delete
+                        </a>
+                    </td>
                 </tr>
                 </tbody>
             </table>
         </div>
+        <ul class="nav nav-pills">
+            <li th:each="p, status:${pagesNumber}">
+                <a th:class="${status.index == currentPage ? 'btn btn-primary ms-1': 'btn btn-outline-primary ms-1' }"
+                   th:text="${status.index}"
+                   th:href="${#strings.isEmpty(keyword)} ? @{index(p=${status.index})} : @{index(p=${status.index}, keyword=${keyword})}"
+                >
+                </a>
+            </li>
+        </ul>
+        </ul>
     </div>
 </div>
 
