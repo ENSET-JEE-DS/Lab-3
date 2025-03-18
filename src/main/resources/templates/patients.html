@@ -7,33 +7,36 @@
 </head>
 <body>
 <!--<h1>List of Patients</h1>-->
-<div class="container">
+<div class="container mt-3">
     <div class="card">
         <div class="card-header">
             List of Patients
         </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Birth-Date</th>
+                    <th>Score</th>
+                    <th>Sick</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="p:${patientsList}">
+                    <td th:text="${p.id}"></td>
+                    <td th:text="${p.name}"></td>
+                    <td th:text="${p.birthDate}"></td>
+                    <td th:text="${p.score}"></td>
+                    <td th:text="${p.ill ? 'Sick': 'Healthy'}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
-<table class="table">
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Birth-Date</th>
-        <th>Score</th>
-        <th>Ill</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="p:${patientsList}">
-        <td th:text="${p.id}"></td>
-        <td th:text="${p.name}"></td>
-        <td th:text="${p.birthDate}"></td>
-        <td th:text="${p.score}"></td>
-        <td th:text="${p.ill}"></td>
-    </tr>
-    </tbody>
-</table>
+
 
 </body>
 </html>
