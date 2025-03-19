@@ -5,13 +5,9 @@ import application.lab3.repositories.PatientRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -19,6 +15,11 @@ import java.util.List;
 @AllArgsConstructor
 public class PatientController {
     private PatientRepository patientRepository;
+
+    @GetMapping
+    public String home() {
+        return "redirect:/index";
+    }
 
     @GetMapping(path = "/index")
     public String patients(
@@ -36,9 +37,12 @@ public class PatientController {
     }
 
     @GetMapping("/delete")
-    public String deletePatient(Long id, @RequestParam(name = "p") int page, String keyword) {
+    public String deletePatient(Long id, @RequestParam(name = "p") int page, @RequestParam(required = false) String keyword) {
         patientRepository.deleteById(id);
-        return "redirect:/index?p=" + page + "&keyword=" + keyword;
+        if (keyword != null) {
+            return "redirect:/index?p=" + page + "&keyword=" + keyword;
+        }
+        return "redirect:/index?p=" + page;
     }
 
     @GetMapping("/patients")
@@ -46,4 +50,19 @@ public class PatientController {
     public List<Patient> getAllPatients() {
         return patientRepository.findAll();
     }
+
+    @GetMapping("/addPatient")
+    public String addPatient(Model model) {
+        model.addAttribute("patient", new Patient());
+        return "patientForm";
+    }
+
+    @PostMapping("/addPatient")
+    public String addPatient(@ModelAttribute Patient patient) {
+        System.out.println("Patient to be added:" + patient);
+        patientRepository.save(patient);
+        System.out.println("Patient added successfully:" + patient);
+        return "patientForm";
+    }
+
 }
