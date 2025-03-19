@@ -11,12 +11,15 @@
 <div layout:fragment="content-1">
 
     <h1>
-        Add Patient Form
+        Update Patient Form
     </h1>
     <div class="col-md-6 offset-3">
 
         <form th:action="@{addPatient}" method="post">
             <div>
+                <label>ID</label>
+                <input class="form-control" type="text" name="id" th:value="${patient.id}">
+
                 <label>Name</label>
                 <input class="form-control" type="text" name="name" th:value="${patient.name}">
                 <span class="text-danger" th:errors="${patient.name}"></span>

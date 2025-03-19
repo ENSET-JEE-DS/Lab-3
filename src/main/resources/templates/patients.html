@@ -33,7 +33,7 @@
                         <th>Birth-Date</th>
                         <th>Score</th>
                         <th>Status</th>
-                        <th>Delete</th>
+                        <th>Action</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -47,6 +47,11 @@
                             <a href="" class="btn btn-outline-danger"
                                th:href="${!#strings.isEmpty(keyword)} ? @{delete(id=${p.id}, keyword=${keyword}, p=${currentPage})} :@{delete(id=${p.id}, p=${currentPage})}">
                                 <i class="bi bi-trash-fill"></i>
+                            </a>
+
+                            <a href="" class="btn btn-outline-primary"
+                               th:href="@{update(id=${p.id})}">
+                                <i class="bi bi-pencil"></i>
                             </a>
                         </td>
                     </tr>

@@ -1,6 +1,8 @@
 package application.lab3.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,9 +15,10 @@ import java.time.LocalDate;
 public class Patient {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Size(min = 5, max = 20)
     private String name;
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthDate;
     private boolean ill;
+    @DecimalMax("100")
     private int score;
 }

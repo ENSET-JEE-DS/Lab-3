@@ -2,11 +2,13 @@ package application.lab3.web;
 
 import application.lab3.entities.Patient;
 import application.lab3.repositories.PatientRepository;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -58,11 +60,32 @@ public class PatientController {
     }
 
     @PostMapping("/addPatient")
-    public String addPatient(@ModelAttribute Patient patient) {
-        System.out.println("Patient to be added:" + patient);
+    public String addPatient(@ModelAttribute @Valid Patient patient, BindingResult bindingResult) {
+        System.out.println("Adding Patient: " + patient);
+        if (bindingResult.hasErrors()) {
+            return "patientForm";
+        }
         patientRepository.save(patient);
         System.out.println("Patient added successfully:" + patient);
-        return "patientForm";
+        return "redirect:/index";
     }
 
+    @GetMapping("/update")
+    public String updatePatient(Long id, Model model) {
+        Patient patient = patientRepository.findById(id).get();
+        model.addAttribute("patient", patient);
+        return "patientFormUpdate";
+    }
+
+//    @PostMapping("/update")
+//    public String updatePatient(@ModelAttribute @Valid Patient patient, BindingResult bindingResult) {
+//        if (bindingResult.hasErrors()) {
+//            return "patientFormUpdate";
+//        }
+//        Patient updatedPatient = patientRepository.findById(patient.getId()).get();
+//        updatedPatient.setName(patient.getName());
+//        updatedPatient.setBirthDate(patient.getBirthDate());
+//        updatedPatient.set
+//        return "redirect:/index";
+//    }
 }
