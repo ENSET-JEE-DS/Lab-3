@@ -33,7 +33,7 @@
                         <th>Birth-Date</th>
                         <th>Score</th>
                         <th>Status</th>
-                        <th>Action</th>
+                        <th th:if="${#authorization.expression('hasRole(''ADMIN'')')}">Action</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -43,7 +43,8 @@
                         <td th:text="${p.birthDate}"></td>
                         <td th:text="${p.score}"></td>
                         <td th:text="${p.ill ? 'Sick': 'Healthy'}"></td>
-                        <td>
+
+                        <td th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
                             <a href="" class="btn btn-outline-danger"
                                th:href="${!#strings.isEmpty(keyword)} ? @{delete(id=${p.id}, keyword=${keyword}, p=${currentPage})} :@{delete(id=${p.id}, p=${currentPage})}">
                                 <i class="bi bi-trash-fill"></i>
@@ -70,8 +71,7 @@
             </ul>
         </div>
     </div>
-
-
 </div>
+
 </body>
 </html>

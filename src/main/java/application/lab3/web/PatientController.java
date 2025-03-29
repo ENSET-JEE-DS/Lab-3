@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -39,6 +40,7 @@ public class PatientController {
     }
 
     @GetMapping("/delete")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String deletePatient(Long id, @RequestParam(name = "p") int page, @RequestParam(required = false) String keyword) {
         patientRepository.deleteById(id);
         if (keyword != null) {
@@ -72,20 +74,18 @@ public class PatientController {
 
     @GetMapping("/update")
     public String updatePatient(Long id, Model model) {
-        Patient patient = patientRepository.findById(id).get();
+        Patient patient = patientRepository.findById(id).orElse(null);
+        if (patient == null) return "redirect:/index";
         model.addAttribute("patient", patient);
         return "patientFormUpdate";
     }
 
-//    @PostMapping("/update")
-//    public String updatePatient(@ModelAttribute @Valid Patient patient, BindingResult bindingResult) {
-//        if (bindingResult.hasErrors()) {
-//            return "patientFormUpdate";
-//        }
-//        Patient updatedPatient = patientRepository.findById(patient.getId()).get();
-//        updatedPatient.setName(patient.getName());
-//        updatedPatient.setBirthDate(patient.getBirthDate());
-//        updatedPatient.set
-//        return "redirect:/index";
-//    }
+    @PostMapping("/update")
+    public String updatePatient(@ModelAttribute @Valid Patient patient, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "patientFormUpdate";
+        }
+        patientRepository.save(patient);
+        return "redirect:/index";
+    }
 }

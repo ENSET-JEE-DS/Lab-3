@@ -27,7 +27,9 @@
                         Patients
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" th:href="@{addPatient}">Add Patient</a></li>
+                        <li th:if="${#authorization.expression('hasRole(''ADMIN'')')}"><a class="dropdown-item"
+                                                                                          th:href="@{addPatient}">Add
+                            Patient</a></li>
                         <li>
                             <hr class="dropdown-divider">
                         </li>
@@ -39,15 +41,18 @@
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                       aria-expanded="false">
-                        [Username]
+                       aria-expanded="false" th:text="${#authentication.name}">
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" th:href="@{logout}">Log-out</a></li>
+                        <li>
+                            <form th:action="@{logout}" method="post">
+                                <input class="dropdown-item" type="submit" value="Logout">
+                            </form>
+                        </li>
                         <li>
                             <hr class="dropdown-divider">
                         </li>
-                        <!--                        <li><a class="dropdown-item" href="#">Logout</a></li>-->
+
 
                     </ul>
                 </li>

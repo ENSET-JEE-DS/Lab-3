@@ -7,6 +7,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -24,12 +26,19 @@ public class Lab3Application {
         return args -> {
             System.out.println("Application Started");
 
+//            for (int i = 0; i < 4; i++) {
 //            patientRepository.save(new Patient(null, "Paul Mccartney", LocalDate.now(), true, 90));
 //            patientRepository.save(new Patient(null, "John Lennon", LocalDate.now(), false, 12));
 //            patientRepository.save(new Patient(null, "Ringo Starr", LocalDate.now(), true, 20));
 //            patientRepository.save(new Patient(null, "George Harrison", LocalDate.now(), true, 58));
 //            patientRepository.save(new Patient(null, "George Martin", LocalDate.now(), true, 19));
+//            }
 
         };
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }

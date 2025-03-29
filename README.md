@@ -17,6 +17,7 @@ The project uses the following dependencies:
 - **Spring Boot Starter Data JPA**: Starter for using Spring Data JPA with Hibernate.
 - **Spring Boot Starter Thymeleaf**: Starter for using Thymeleaf as the view layer.
 - **Spring Boot Starter Validation**: Starter for using Java Bean Validation with Hibernate Validator.
+- **Spring Boot Starter Security**: Starter for using Spring Security.
 - **Lombok**: Library for reducing boilerplate code by using annotations.
 - **MySQL Connector**: JDBC driver for MySQL.
 - **Bootstrap**: Front-end framework for responsive web design.
@@ -113,6 +114,74 @@ public class PatientController {
 }
 ```
 
+### `SecurityConfig`
+
+The `SecurityConfig` class configures Spring Security for the application. It sets up in-memory user details, form login, authorization rules, and exception handling.
+
+```java
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
+public class SecurityConfig {
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
+    @Bean
+    public InMemoryUserDetailsManager inMemoryUserDetailsManager() {
+        return new InMemoryUserDetailsManager(
+                User.withUsername("user").password(passwordEncoder.encode("user")).roles("USER").build(),
+                User.withUsername("user2").password(passwordEncoder.encode("user")).roles("USER").build(),
+                User.withUsername("admin").password(passwordEncoder.encode("admin")).roles("USER", "ADMIN").build()
+        );
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+        return httpSecurity
+                .formLogin(form -> form.loginPage("/login").permitAll())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/webjars/**").permitAll()
+                        .requestMatchers("/delete/**").hasRole("ADMIN")
+                        .requestMatchers("/update/**").hasRole("ADMIN")
+                        .requestMatchers("/addPatient/**").hasRole("ADMIN")
+                        .requestMatchers("/index").hasAnyRole("USER", "ADMIN")
+                        .anyRequest().authenticated()
+                )
+                .exceptionHandling(exception ->
+                        exception.accessDeniedPage("/notAuthorized"))
+                .rememberMe(remember -> remember
+                        .key("remember")
+                        .rememberMeCookieName("remember-cookie")
+                        .rememberMeParameter("remember-me")
+
+                )
+                .build();
+    }
+
+}
+```
+
+### `SecurityController`
+
+The `SecurityController` class handles HTTP requests for login and authorization error pages.
+
+```java
+@Controller
+public class SecurityController {
+
+    @GetMapping("/notAuthorized")
+    public String notAuthorized() {
+        return "notAuthorized";
+    }
+
+    @GetMapping("/login")
+    public String login() {
+        return "login";
+    }
+}
+```
+
 ### Thymeleaf Templates
 
 The project uses Thymeleaf templates for rendering HTML views. The main templates are:
@@ -120,6 +189,8 @@ The project uses Thymeleaf templates for rendering HTML views. The main template
 - `patients.html`: Displays the list of patients with search and pagination functionality.
 - `patientForm.html`: Form for adding a new patient.
 - `patientFormUpdate.html`: Form for updating an existing patient.
+- `login.html`: Login page for user authentication.
+- `notAuthorized.html`: Page displayed when a user is not authorized to access a resource.
 - `template-1.html`: Base layout template for the application.
 
 ## Configuration
@@ -148,4 +219,4 @@ The application will start and be accessible at `http://localhost:8080`.
 
 ## Conclusion
 
-This project demonstrates a basic Spring Boot application with CRUD operations, pagination, and search functionality using Thymeleaf and MySQL. It serves as a good starting point for building more complex web applications with Spring Boot.
+This project demonstrates a basic Spring Boot application with CRUD operations, pagination, search functionality, and security features using Thymeleaf and MySQL. It serves as a good starting point for building more complex web applications with Spring Boot.
