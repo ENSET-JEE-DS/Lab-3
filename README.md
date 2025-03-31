@@ -25,7 +25,9 @@ The project uses the following dependencies:
 
 ## Major Code Parts
 
-### `Patient` Entity
+### Entities
+
+#### `Patient` Entity
 
 The `Patient` class represents the patient entity with fields for ID, name, birth date, illness status, and score. It uses JPA annotations for ORM mapping and validation annotations for input validation.
 
@@ -49,8 +51,8 @@ public class Patient {
     private int score;
 }
 ```
-
-### `PatientRepository`
+### Repositories
+#### `PatientRepository`
 
 The `PatientRepository` interface extends `JpaRepository` to provide CRUD operations and a custom query method to find patients by name containing a keyword.
 
@@ -60,8 +62,8 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     Page<Patient> findByNameContains(String keyword, Pageable pageable);
 }
 ```
-
-### `PatientController`
+### Controllers
+#### `PatientController`
 
 The `PatientController` class handles HTTP requests for managing patients. It includes methods for listing, adding, updating, and deleting patients, as well as handling pagination and search functionality.
 
@@ -114,6 +116,29 @@ public class PatientController {
 }
 ```
 
+#### `SecurityController`
+
+The `SecurityController` class handles HTTP requests for login and authorization error pages.
+
+```java
+@Controller
+public class SecurityController {
+
+    @GetMapping("/notAuthorized")
+    public String notAuthorized() {
+        return "notAuthorized";
+    }
+
+    @GetMapping("/login")
+    public String login() {
+        return "login";
+    }
+}
+```
+
+
+### Configurations
+
 ### `SecurityConfig`
 
 The `SecurityConfig` class configures Spring Security for the application. It sets up in-memory user details, form login, authorization rules, and exception handling.
@@ -162,25 +187,6 @@ public class SecurityConfig {
 }
 ```
 
-### `SecurityController`
-
-The `SecurityController` class handles HTTP requests for login and authorization error pages.
-
-```java
-@Controller
-public class SecurityController {
-
-    @GetMapping("/notAuthorized")
-    public String notAuthorized() {
-        return "notAuthorized";
-    }
-
-    @GetMapping("/login")
-    public String login() {
-        return "login";
-    }
-}
-```
 
 ### Thymeleaf Templates
 
