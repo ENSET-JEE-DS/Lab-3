@@ -5,7 +5,6 @@
 This project is a simple Spring Boot application for managing patients. It provides functionalities to add, update, delete, and search for patients. The application uses Thymeleaf for rendering HTML views and integrates with a MySQL database for data persistence.
 
 ## Goal
-
 The goal of this project is to demonstrate the use of Spring Boot, Spring Data JPA, Thymeleaf, and MySQL in building a web application. It covers basic CRUD operations and pagination.
 
 ## Dependencies
