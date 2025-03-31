@@ -7,8 +7,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.JdbcUserDetailsManager;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -34,6 +37,26 @@ public class Lab3Application {
 //            patientRepository.save(new Patient(null, "George Martin", LocalDate.now(), true, 19));
 //            }
 
+        };
+    }
+
+    @Bean
+    CommandLineRunner runUsersManager(JdbcUserDetailsManager jdbcUserDetailsManager) {
+        PasswordEncoder passwordEncoder = passwordEncoder();
+        return args -> {
+            if (!jdbcUserDetailsManager.userExists("user")) {
+                jdbcUserDetailsManager.createUser(User
+                        .withUsername("user")
+                        .password(passwordEncoder.encode("user"))
+                        .roles("USER").build());
+            }
+
+            if (!jdbcUserDetailsManager.userExists("admin")) {
+                jdbcUserDetailsManager.createUser(User
+                        .withUsername("admin")
+                        .password(passwordEncoder.encode("admin"))
+                        .roles("ADMIN", "USER").build());
+            }
         };
     }
 

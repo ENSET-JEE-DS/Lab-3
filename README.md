@@ -135,12 +135,11 @@ public class SecurityController {
 }
 ```
 
-
 ### Configurations
 
 ### `SecurityConfig`
 
-The `SecurityConfig` class configures Spring Security for the application. It sets up in-memory user details, form login, authorization rules, and exception handling.
+The `SecurityConfig` class configures Spring Security for the application. It sets up JDBC/inMemory user details management, form login, authorization rules, and exception handling.
 
 ```java
 @Configuration
@@ -151,6 +150,13 @@ public class SecurityConfig {
     @Autowired
     PasswordEncoder passwordEncoder;
 
+//    JDBC
+    @Bean
+    public JdbcUserDetailsManager jdbcUserDetailsManager(DataSource dataSource) {
+        return new JdbcUserDetailsManager(dataSource);
+    }
+
+//    InMemory
     @Bean
     public InMemoryUserDetailsManager inMemoryUserDetailsManager() {
         return new InMemoryUserDetailsManager(
@@ -159,11 +165,10 @@ public class SecurityConfig {
                 User.withUsername("admin").password(passwordEncoder.encode("admin")).roles("USER", "ADMIN").build()
         );
     }
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
-                .formLogin(form -> form.loginPage("/login").permitAll())
+                .formLogin(form -> form.loginPage("/login").defaultSuccessUrl("/", true).permitAll())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/webjars/**").permitAll()
                         .requestMatchers("/delete/**").hasRole("ADMIN")
@@ -180,12 +185,11 @@ public class SecurityConfig {
                         .rememberMeParameter("remember-me")
 
                 )
-                .build();
+               .build();
     }
 
 }
 ```
-
 
 ### Thymeleaf Templates
 
@@ -207,9 +211,12 @@ spring.datasource.url=jdbc:mysql://localhost:3306/patients_db?createDatabaseIfNo
 spring.datasource.username=root
 spring.datasource.password=yahya
 spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
-spring.jpa.hibernate.ddl-auto=update
+spring.jpa.hibernate.ddl-auto=none
 spring.jpa.show-sql=true
+spring.jpa.defer-datasource-initialization=true
+spring.sql.init.mode=always
 spring.thymeleaf.cache=false
+spring.devtools.livereload.enabled=true
 ```
 
 ## Running the Application
