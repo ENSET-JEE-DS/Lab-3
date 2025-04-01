@@ -1,5 +1,8 @@
 package application.lab3;
 
+import application.lab3.Service.AccountService;
+import application.lab3.entities.AppRole;
+import application.lab3.entities.AppUser;
 import application.lab3.entities.Patient;
 import application.lab3.repositories.PatientRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -40,7 +43,7 @@ public class Lab3Application {
         };
     }
 
-    @Bean
+//    @Bean
     CommandLineRunner runUsersManager(JdbcUserDetailsManager jdbcUserDetailsManager) {
         PasswordEncoder passwordEncoder = passwordEncoder();
         return args -> {
@@ -59,6 +62,21 @@ public class Lab3Application {
             }
         };
     }
+
+//    @Bean
+    CommandLineRunner runUserDetailsManager(AccountService accountService) {
+        return args -> {
+            AppRole appRole = accountService.addNewRole("USER");
+            AppRole appRole1 = accountService.addNewRole("ADMIN");
+            AppUser appUser = accountService.addNewUser("USER", "USER", "USER", "USER@gmail.com");
+            AppUser appUser1 = accountService.addNewUser("ADMIN", "ADMIN", "ADMIN", "ADMIN@gmail.com");
+
+            accountService.addRoleToUser("USER", "USER");
+            accountService.addRoleToUser("ADMIN", "ADMIN");
+
+        };
+    }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {

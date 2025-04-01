@@ -1,4 +1,4 @@
-# Lab-3
+# Lab-3: Spring MVC, Spring Data JPA Thymeleaf, Spring Security
 
 ## Overview
 
@@ -28,7 +28,7 @@ The project uses the following dependencies:
 
 #### `Patient` Entity
 
-The `Patient` class represents the patient entity with fields for ID, name, birth date, illness status, and score. It uses JPA annotations for ORM mapping and validation annotations for input validation.
+The `Patient` class represents the patient entity with fields. It uses JPA annotations for ORM mapping and validation annotations for input validation.
 
 ```java
 @Entity
@@ -50,6 +50,48 @@ public class Patient {
     private int score;
 }
 ```
+
+#### `AppUser` Entity
+
+The `AppUser` class represents the user entity with fields for ID, username, password, email, and a list of roles. It uses JPA annotations for ORM mapping and Lombok annotations for boilerplate code reduction.
+
+```java
+@Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class AppUser {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String userId;
+    @Column(unique=true)
+    private String username;
+    private String password;
+    @Column(unique=true)
+    private String email;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @Builder.Default
+    private List<AppRole> roleList = new ArrayList<>();
+}
+```
+
+#### `AppRole` Entity
+
+The `AppRole` class represents the role entity with a single field for the role name. It uses JPA annotations for ORM mapping and Lombok annotations for boilerplate code reduction.
+
+```java
+@Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class AppRole {
+    @Id
+    private String roleName;
+}
+```
+
 ### Repositories
 #### `PatientRepository`
 
@@ -61,6 +103,143 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     Page<Patient> findByNameContains(String keyword, Pageable pageable);
 }
 ```
+
+#### `AppRoleRepository`
+
+The `AppRoleRepository` interface extends `JpaRepository` to provide CRUD operations for the `AppRole` entity.
+
+```java
+@Repository
+public interface AppRoleRepository extends JpaRepository<AppRole, Long> {
+    AppRole findByRoleName(String roleName);
+}
+```
+
+#### `AppUserRepository`
+
+The `AppUserRepository` interface extends `JpaRepository` to provide CRUD operations for the `AppUser` entity.
+
+```java
+@Repository
+public interface AppUserRepository extends JpaRepository<AppUser, Long> {
+    AppUser findByUsername(String username);
+}
+```
+
+### Services
+
+#### `AccountService`
+
+The `AccountService` interface defines methods for managing users and roles.
+
+```java
+public interface AccountService {
+    AppUser addNewUser(String username, String password, String confirmPassword, String email);
+    AppRole addNewRole(String role);
+    void addRoleToUser(String username, String role);
+    void removeRoleFromUser(String username, String role);
+    AppUser getUserByUsername(String username);
+}
+```
+
+#### `AccountServiceImpl`
+
+The `AccountServiceImpl` class implements the `AccountService` interface and provides the logic for managing users and roles.
+
+```java
+@Service
+@Transactional
+@AllArgsConstructor
+public class AccountServiceImpl implements AccountService {
+    private AppUserRepository appUserRepository;
+    private AppRoleRepository appRoleRepository;
+    private PasswordEncoder passwordEncoder;
+
+    @Override
+    public AppUser addNewUser(String username, String password, String confirmPassword, String email) {
+        if (appUserRepository.findByUsername(username) != null) {
+            throw new RuntimeException("Username already exists");
+        }
+        if (!password.equals(confirmPassword)) throw new RuntimeException("Passwords do not match");
+
+        AppUser appUser = AppUser.builder()
+                .username(username)
+                .password(passwordEncoder.encode(password))
+                .email(email)
+                .build();
+
+        return appUserRepository.save(appUser);
+    }
+
+    @Override
+    public AppRole addNewRole(String role) {
+        if (appRoleRepository.findByRoleName(role) != null) throw new RuntimeException("Role already exists");
+        AppRole appRole = AppRole.builder()
+                .roleName(role)
+                .build();
+
+        return appRoleRepository.save(appRole);
+    }
+
+    @Override
+    public void addRoleToUser(String username, String role) {
+        AppUser appUser = appUserRepository.findByUsername(username);
+        if (appUser == null) throw new RuntimeException("User not found");
+
+        AppRole appRole = appRoleRepository.findByRoleName(role);
+        if (appRole == null) throw new RuntimeException("Role not found");
+
+        appUser.getRoleList().add(appRole);
+    }
+
+    @Override
+    public void removeRoleFromUser(String username, String role) {
+        AppUser appUser = appUserRepository.findByUsername(username);
+        if (appUser == null) throw new RuntimeException("User not found");
+
+        AppRole appRole = appRoleRepository.findByRoleName(role);
+        if (appRole == null) throw new RuntimeException("Role not found");
+
+        appUser.getRoleList().remove(appRole);
+    }
+
+    @Override
+    public AppUser getUserByUsername(String username) {
+        AppUser appUser = appUserRepository.findByUsername(username);
+        if (appUser == null) throw new RuntimeException("User not found");
+        return appUser;
+    }
+}
+```
+
+#### `UserDetailsServiceImpl`
+
+The `UserDetailsServiceImpl` class implements the `UserDetailsService` interface and provides the logic for loading user details by username.
+
+```java
+@Service
+@AllArgsConstructor
+public class UserDetailsServiceImpl implements UserDetailsService {
+
+    AccountService accountService;
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        AppUser appUser = accountService.getUserByUsername(username);
+        if (appUser == null) throw new UsernameNotFoundException("Username " + username + " not found");
+
+        List<String> userRoleList = appUser.getRoleList().stream().map(AppRole::getRoleName).toList();
+        String[] roles = appUser.getRoleList().stream().map(AppRole::getRoleName).toArray(String[]::new);
+
+        return User
+                .withUsername(appUser.getUsername())
+                .password(appUser.getPassword())
+                .roles(roles)
+                .build();
+    }
+}
+```
+
 ### Controllers
 #### `PatientController`
 
@@ -139,7 +318,7 @@ public class SecurityController {
 
 ### `SecurityConfig`
 
-The `SecurityConfig` class configures Spring Security for the application. It sets up JDBC/inMemory user details management, form login, authorization rules, and exception handling.
+The `SecurityConfig` class configures Spring Security for the application. It sets up JDBC/inMemory/UserDetailsService user details management, form login, authorization rules, and exception handling.
 
 ```java
 @Configuration
@@ -150,13 +329,13 @@ public class SecurityConfig {
     @Autowired
     PasswordEncoder passwordEncoder;
 
-//    JDBC
+//    JDBC  Authentication
     @Bean
     public JdbcUserDetailsManager jdbcUserDetailsManager(DataSource dataSource) {
         return new JdbcUserDetailsManager(dataSource);
     }
 
-//    InMemory
+//    InMemory Authentication
     @Bean
     public InMemoryUserDetailsManager inMemoryUserDetailsManager() {
         return new InMemoryUserDetailsManager(
@@ -175,16 +354,18 @@ public class SecurityConfig {
                         .requestMatchers("/update/**").hasRole("ADMIN")
                         .requestMatchers("/addPatient/**").hasRole("ADMIN")
                         .requestMatchers("/index").hasAnyRole("USER", "ADMIN")
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
+                
                 .exceptionHandling(exception ->
                         exception.accessDeniedPage("/notAuthorized"))
+                
                 .rememberMe(remember -> remember
                         .key("remember")
                         .rememberMeCookieName("remember-cookie")
-                        .rememberMeParameter("remember-me")
-
-                )
+                        .rememberMeParameter("remember-me"))
+                // UserDetailsService Authentication
+                .userDetailsService(userDetailsServiceImpl)
+                
                .build();
     }
 
@@ -232,3 +413,4 @@ The application will start and be accessible at `http://localhost:8080`.
 ## Conclusion
 
 This project demonstrates a basic Spring Boot application with CRUD operations, pagination, search functionality, and security features using Thymeleaf and MySQL. It serves as a good starting point for building more complex web applications with Spring Boot.
+
