@@ -7,6 +7,10 @@ This project is a simple Spring Boot application for managing patients. It provi
 ## Goal
 The goal of this project is to demonstrate the use of Spring Boot, Spring Data JPA, Thymeleaf, and MySQL in building a web application. It covers basic CRUD operations and pagination.
 
+## Demonstration Video
+https://github.com/user-attachments/assets/82c8f4a3-f443-4585-9ec8-a3c97d553b52
+
+
 ## Dependencies
 
 The project uses the following dependencies:
